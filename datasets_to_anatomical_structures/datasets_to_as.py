@@ -6,7 +6,7 @@ import json
 
 
 def main():
-    TOKEN = "Agv0nl80boPq8nb8b1NqenG1xNz7Y79XvjvrWW90j633BOaPKYtzC9GDJEVX0PwY8EEv2bgnYKBpM3fOgNGydsw57l"
+    TOKEN = ""
     # base_url = "https://entity.api.hubmapconsortium.org/entities/"
     ccf_api_url = "https://ccf-api.hubmapconsortium.org/v1/hubmap/rui_locations.jsonld"
     headers = {"Authorization": "Bearer " + TOKEN}
