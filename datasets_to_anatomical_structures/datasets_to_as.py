@@ -1,8 +1,6 @@
 import csv
 import requests
-import time
 import json
-
 
 
 def main():
@@ -44,7 +42,6 @@ def main():
     # f = open("ccf_api_response_rui_locations.jsonld")
     f = open("ccf_api_response_rui_locations_TOKEN.jsonld")
     response = json.load(f)
-    print(len(response['@graph']))
     for id in uuids:
             for donor in response['@graph']:
                 for sample in donor['samples']:
