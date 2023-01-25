@@ -4,7 +4,7 @@ import json
 
 
 def main():
-    TOKEN = ""
+    TOKEN = "AgeYjqwJx6xpv7Jyy7PYxerllKM7MKn9OjyNP4rp7jNVgejGjNUVCjB4m6r1plMv2EkMdv8Bb2PD1t5VmMkMtj9N1"
     # base_url = "https://entity.api.hubmapconsortium.org/entities/"
     ccf_api_url = "https://ccf-api.hubmapconsortium.org/v1/hubmap/rui_locations.jsonld"
     entity_api_url = "https://entity.api.hubmapconsortium.org/entities/"
