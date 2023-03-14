@@ -67,23 +67,7 @@ scatter_theme+
 
 # Fig. 1 Sankey diagram
 
-# Load energy projection data
-URL <- "https://cdn.rawgit.com/christophergandrud/networkD3/master/JSONdata/energy.json"
-Energy <- jsonlite::fromJSON(URL)
-
-
-# Now we have 2 data frames: a 'links' data frame with 3 columns (from, to, value), and a 'nodes' data frame that gives the name of each node.
-head( Energy$links )
-head( Energy$nodes )
-
-# Thus we can plot it
-p <- sankeyNetwork(Links = Energy$links, Nodes = Energy$nodes, Source = "source",
-                   Target = "target", Value = "value", NodeID = "name",
-                   units = "TWh", fontSize = 12, nodeWidth = 30)
-p
-
-
-# reformat data we we get source|donor_sex|organ|publication_status
+# reformat data we we get source|donor_sex|organ
 # need two tibbles: 
 # NODES with NodeId
 # LINKS with Source, Target, Value
@@ -116,6 +100,9 @@ for(u in unique_name){
 nodes$index <- 1:nrow (nodes) 
 nodes
 
+nodes$index = nodes$index-1
+nodes
+
 s_o = subset_sankey %>% 
   group_by(source, donor_sex) %>% 
   summarize(count=n()) %>% 
@@ -139,7 +126,7 @@ prep_links
 
 links = prep_links 
 
-# rename node table
+# rename node and link tables
 
 names(nodes)[1] = "source"
 prep_links = left_join(prep_links, nodes,by="source")
@@ -152,11 +139,9 @@ prep_links = prep_links[,c(4,5,3)]
 names(prep_links)[1:2] = c("source", "target")
 names(nodes)[1] = "name"
 
-
-
-
+# draw Sankey diagram
 p <- sankeyNetwork(Links = prep_links, Nodes = nodes, Source = "source",
                    Target = "target", Value = "value", NodeID = "name",
-                   units = "occurrences", fontSize = 12, nodeWidth = 2)
+                   units = "occurrences", fontSize = 15, nodeWidth = 30)
 p
 
