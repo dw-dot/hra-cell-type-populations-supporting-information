@@ -3,7 +3,6 @@ library(googlesheets4)
 library("tidyverse")
 library(scales) #for scatter graph
 library(networkD3) #for Sankey
-library(hash) # for Sankey
 
 # load data
 # raw = read_sheet('https://docs.google.com/spreadsheets/d/1cwxztPg9sLq0ASjJ5bntivUk6dSKHsVyR1bE6bXvMkY/edit#gid=0', skip=1)
@@ -13,7 +12,8 @@ raw=read_sheet("https://docs.google.com/spreadsheets/d/1cwxztPg9sLq0ASjJ5bntivUk
 cols_renamed = raw %>% 
   rename(
     tissue_block_volume= `tissue_block_volume (if registered) [millimeters^3]`,
-    cta = `cta... (Azimuth, popV, Ctypist)`
+    cta = `cta... (Azimuth, popV, Ctypist)`,
+    rui_organ = `rui_organ (if registered)`
   )
 cols_renamed
 
@@ -25,23 +25,23 @@ cols_renamed %>%
 
 # format data for scatter graph
 scatter = cols_renamed%>% 
-  select(source,paper_id,organ, HuBMAP_tissue_block_id, rui_location_id, number_of_cells_total, tissue_block_volume, cta, omap_id, unique_CT_for_tissue_block) %>% 
+  select(source,paper_id,organ, rui_organ, HuBMAP_tissue_block_id, number_of_cells_total, tissue_block_volume, cta, omap_id, unique_CT_for_tissue_block) %>% 
   filter(!is.na(tissue_block_volume),!is.na(number_of_cells_total)) %>% 
   group_by(
+    source,
     HuBMAP_tissue_block_id, 
     tissue_block_volume, 
     unique_CT_for_tissue_block,
     paper_id,
-    organ
+    organ,
+    rui_organ
     ) %>% 
-  summarise(total_per_tissue_block = sum(number_of_cells_total)) 
-
-scatter %>% view()
+  summarise(total_per_tissue_block = sum(number_of_cells_total))
 
 scatter_theme <- theme(
   plot.title = element_text(family = "Helvetica", face = "bold", size = (20)),
   legend.title = element_text(colour = "black", face = "bold.italic", family = "Helvetica"),
-  legend.text = element_text(face = "italic", colour = "black", family = "Helvetica"),
+  legend.text = element_text(face = "italic", colour = "black", family = "Helvetica", size=20),
   axis.title = element_text(family = "Helvetica", size = (20), colour = "black"),
   axis.text = element_text(family = "Courier", colour = "black", size = (20)),
   legend.key.size = unit(1,"line"), legend.position = "bottom"
@@ -49,11 +49,12 @@ scatter_theme <- theme(
 
 # Fig. 1 scatter graph
 
-ggplot(data = scatter, aes(x = tissue_block_volume, y = total_per_tissue_block, color=organ))+
+ggplot(data = scatter, aes(x = tissue_block_volume, y = total_per_tissue_block, color=organ, shape=source))+
   geom_point(
     size=scatter$unique_CT_for_tissue_block/3, alpha=.5
     )+
-  # facet_wrap(~organ)+
+  # facet_wrap(~source)+
+  facet_grid(vars(source), vars(organ))+
   # geom_text(aes(x = tissue_block_volume+1, y = total_per_tissue_block, label=paper_id), nudge_x=.5, size=5) +
   guides(color = guide_legend(title = "Organ"))+
    scale_color_brewer(type="qual",palette=2,direction=-1)+
@@ -88,7 +89,6 @@ o = subset_sankey %>%
 unique_name=list()
 unique_name = unlist(append(unique_name, c(s, d, o)))
 unique_name = list(unique_name)
-unique_name %>% view()
 
 nodes = as.data.frame(tibble(name = character()))
 
