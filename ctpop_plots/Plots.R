@@ -6,7 +6,8 @@ library(networkD3) #for Sankey
 library(hash) # for Sankey
 
 # load data
-raw = read_sheet('https://docs.google.com/spreadsheets/d/1cwxztPg9sLq0ASjJ5bntivUk6dSKHsVyR1bE6bXvMkY/edit#gid=0', skip=1)
+# raw = read_sheet('https://docs.google.com/spreadsheets/d/1cwxztPg9sLq0ASjJ5bntivUk6dSKHsVyR1bE6bXvMkY/edit#gid=0', skip=1)
+raw=read_sheet("https://docs.google.com/spreadsheets/d/1cwxztPg9sLq0ASjJ5bntivUk6dSKHsVyR1bE6bXvMkY/edit#gid=1529271254", sheet="Copy of Training/Prediction",skip=1)
 
 # rename columns
 cols_renamed = raw %>% 
@@ -138,24 +139,23 @@ prep_links
 
 links = prep_links 
 
-links = prep_links %>% 
-  mutate(
-    source = ifelse(prep_links$source == nodes$name,nodes[,2], "source"),
-    target = ifelse(prep_links$target == nodes$name,nodes[,2], "target")
-    )
-links
+# rename node table
+
+names(nodes)[1] = "source"
+prep_links = left_join(prep_links, nodes,by="source")
+
+names(nodes)[1] = "target"
+prep_links = left_join(prep_links, nodes,by="target")
+prep_links
+
+prep_links = prep_links[,c(4,5,3)]
+names(prep_links)[1:2] = c("source", "target")
+names(nodes)[1] = "name"
 
 
-df <- data.frame(Col1 = 1:10,
-                 Col2 = c("a", "a", "a", "b", "b", "c", "c", "d", "d", "d"),
-                 Col3 = c("11%", "12%", "13%", "14%", "15%", "16%", "17%", "18%", "19%", "20%"))
 
 
-df %>% mutate(Col3 = ifelse(Col2 == 'b',NA_character_,Col3))
-
-df
-
-p <- sankeyNetwork(Links = links, Nodes = nodes, Source = "source",
+p <- sankeyNetwork(Links = prep_links, Nodes = nodes, Source = "source",
                    Target = "target", Value = "value", NodeID = "name",
                    units = "occurrences", fontSize = 12, nodeWidth = 2)
 p
