@@ -2,6 +2,7 @@
 library(googlesheets4)
 library("tidyverse")
 library(scales) #for scatter graph
+library(ggrepel) # to jitter labels
 library(networkD3) #for Sankey
 
 # load data
@@ -38,33 +39,42 @@ scatter = cols_renamed%>%
     ) %>% 
   summarise(total_per_tissue_block = sum(number_of_cells_total))
 
+scatter[scatter$organ%in%c("Kidney (Left)", "Kidney (Right)"),]$organ = "Kidney"
+scatter[scatter$organ%in%c("Lung (Left)", "Lung (Right)"),]$organ = "Lung"
+
 scatter_theme <- theme(
-  plot.title = element_text(family = "Helvetica", face = "bold", size = (20)),
-  legend.title = element_text(colour = "black", face = "bold.italic", family = "Helvetica"),
-  legend.text = element_text(face = "italic", colour = "black", family = "Helvetica", size=20),
-  axis.title = element_text(family = "Helvetica", size = (20), colour = "black"),
+  plot.title = element_text(family = "Arial", face = "bold", size = (20)),
+  legend.title = element_text(colour = "black", face = "bold.italic", family = "Arial", size=20),
+  legend.text = element_text(face = "italic", colour = "black", family = "Arial", size=20),
+  axis.title = element_text(family = "Arial", size = (20), colour = "black"),
   axis.text = element_text(family = "Courier", colour = "black", size = (20)),
-  legend.key.size = unit(1,"line"), legend.position = "bottom"
+  legend.key.size = unit(3,"line")
 )
 
 # Fig. 1 scatter graph
 
-ggplot(data = scatter, aes(x = tissue_block_volume, y = total_per_tissue_block, color=organ, shape=source))+
+ggplot(data = scatter, aes(x = tissue_block_volume, y = total_per_tissue_block, color=organ, shape=source, size=unique_CT_for_tissue_block))+
   geom_point(
-    size=scatter$unique_CT_for_tissue_block/3, alpha=.5
+    alpha=.3
     )+
   # facet_wrap(~source)+
   facet_grid(vars(source), vars(organ))+
-  # geom_text(aes(x = tissue_block_volume+1, y = total_per_tissue_block, label=paper_id), nudge_x=.5, size=5) +
-  guides(color = guide_legend(title = "Organ"))+
+  geom_text_repel(aes(x = tissue_block_volume, y = total_per_tissue_block, label=unique_CT_for_tissue_block),
+                  size=5,
+                  color="black",
+                  alpha=.5,
+                  max.overlaps = getOption("ggrepel.max.overlaps", default = 10),) +
+  guides(
+    color = guide_legend( title = "Organ", override.aes = list(size = 10)),
+    shape= guide_legend( title = "Source", override.aes = list(size = 10)),
+    size = guide_legend( title = "Number of unique cell types for tissue block")
+    )+
    scale_color_brewer(type="qual",palette=2,direction=-1)+
   ggtitle("Total number of cells per tissue block over volume")+
  labs(y = "Total number of cells per tissue block", x = "Volume of tissue block")+
 scatter_theme+ 
-  scale_x_continuous(trans = "log10", labels = scales::number_format(accuracy = 0.01,
-                                                                     decimal.mark = ','))+ 
-  scale_y_continuous(trans = "log10", labels=scales::number_format(accuracy = 0.01,
-                                                                   decimal.mark = ','))
+  scale_x_continuous(trans = "log10", labels = scales::number_format(decimal.mark = '.'))+ 
+  scale_y_continuous(trans = "log10", labels=scales::number_format(decimal.mark = '.'))  
 
 # Fig. 1 Sankey diagram
 
@@ -143,5 +153,6 @@ names(nodes)[1] = "name"
 p <- sankeyNetwork(Links = prep_links, Nodes = nodes, Source = "source",
                    Target = "target", Value = "value", NodeID = "name",
                    units = "occurrences", fontSize = 15, nodeWidth = 30)
+
 p
 
