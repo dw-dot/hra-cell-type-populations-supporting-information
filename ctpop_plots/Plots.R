@@ -58,7 +58,7 @@ ggplot(data = scatter, aes(x = tissue_block_volume, y = total_per_tissue_block, 
     alpha=.3
     )+
   # facet_wrap(~source)+
-  facet_grid(vars(source), vars(organ))+
+  # facet_grid(vars(source), vars(organ))+
   geom_text_repel(aes(x = tissue_block_volume, y = total_per_tissue_block, label=unique_CT_for_tissue_block),
                   size=5,
                   color="black",
